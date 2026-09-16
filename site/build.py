@@ -51,6 +51,8 @@ def build_page() -> str:
     data_json = json.dumps(trimmed, separators=(",", ":"))
     matrix_json = json.dumps(matrix_rows, separators=(",", ":"))
 
+    raw_base = ("https://github.com/Piyush-docx/agent-toolkit-audit/blob/main")
+
     return TEMPLATE.format(
         headline_sentences="".join(f"<p>{h}</p>" for h in patterns["headlines"]),
         stat_tiles=stat_tiles,
@@ -60,6 +62,7 @@ def build_page() -> str:
         verification_html=verification_html,
         lists_html=lists_html,
         holdout_html=holdout_html,
+        raw_base=raw_base,
     )
 
 
@@ -228,8 +231,8 @@ TEMPLATE = '''<!DOCTYPE html>
 agent-toolkit readiness, with every claim tied to a verbatim quote from a page it actually fetched.</p>
 <div class="links">
   <a href="https://github.com/Piyush-docx/agent-toolkit-audit">Repo</a>
-  <a href="../../data/results_v1.json">Raw data (JSON)</a>
-  <a href="../../data/patterns.json">Patterns (JSON)</a>
+  <a href="{raw_base}/data/results_v1.json">Raw data (JSON)</a>
+  <a href="{raw_base}/data/patterns.json">Patterns (JSON)</a>
   <a href="#run-it">How to run</a>
 </div>
 
