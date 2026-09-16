@@ -1,0 +1,20 @@
+# secrets
+.env
+
+# python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+
+# runtime artifacts
+cache/
+!cache/sample/
+node_modules/
+
+# os
+.DS_Store
+
+# provided skills pack (not ours to version)
+agent-skills
