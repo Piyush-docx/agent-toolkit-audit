@@ -1,0 +1,8 @@
+researching 1 app(s) with model=sonnet, concurrency=3
+  [1/1] Calendly -> ready
+
+done: 1 record(s) in 64.1s | 1 llm calls | $0.40 | 0 need a human
+researching 1 app(s) with model=sonnet, concurrency=3
+  [1/1] Cal.com -> ready [needs_human]
+
+done: 1 record(s) in 121.2s | 1 llm calls | $0.65 | 1 need a human

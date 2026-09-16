@@ -8,11 +8,27 @@ import sys
 from agent.llm import DEFAULT_MODEL
 
 
+HOLDOUT_ID_BASE = 900  # reserved range, never collides with apps.csv's 1-100
+
+
 def cmd_research(args: argparse.Namespace) -> int:
     from agent.research import load_apps, run, save_stats, select_apps
 
-    apps = select_apps(load_apps(), only=[args.app] if args.app else None,
-                       ids=args.ids)
+    if args.app and args.category:
+        # Holdout mode (brief section 6a): prove the pipeline generalises to
+        # an app that was never in apps.csv, using the same unedited command
+        # path as every other app -- no CSV row, so id/category/hint are
+        # supplied on the command line instead of looked up. Id is derived
+        # from a stable hash (not the builtin hash(), which is randomised per
+        # process) so caching/resumability still works across runs.
+        import hashlib
+        digest = int(hashlib.sha256(args.app.lower().encode()).hexdigest(), 16)
+        apps = [{"id": HOLDOUT_ID_BASE + (digest % 100),
+                "name": args.app, "category": args.category,
+                "hint": args.hint or ""}]
+    else:
+        apps = select_apps(load_apps(), only=[args.app] if args.app else None,
+                           ids=args.ids)
     if args.limit:
         apps = apps[: args.limit]
     print(f"researching {len(apps)} app(s) with model={args.model}, "
@@ -133,6 +149,10 @@ def build_parser() -> argparse.ArgumentParser:
 
     research = sub.add_parser("research", help="research pass 1")
     research.add_argument("--app", help="single app by name, e.g. Stripe")
+    research.add_argument("--category",
+                          help="holdout mode: app is not in apps.csv, so "
+                               "category must be supplied (implies --hint)")
+    research.add_argument("--hint", help="holdout mode: optional starting hint")
     research.add_argument("--ids", type=int, nargs="*", help="app ids")
     research.add_argument("--limit", type=int)
     research.add_argument("--concurrency", type=int, default=3)

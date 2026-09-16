@@ -1,0 +1,151 @@
+[
+  {
+    "id": 921,
+    "name": "Calendly",
+    "category": "Scheduling & Calendar",
+    "one_liner": "Online scheduling tool for booking meetings and managing availability.",
+    "docs_url": "https://developer.calendly.com/getting-started",
+    "auth_methods": [
+      "oauth2",
+      "api_key"
+    ],
+    "primary_auth": "oauth2",
+    "access": "self_serve_free",
+    "access_notes": "Basic REST API (GET/POST) works on any plan including Free, via OAuth2 or a personal access token. Webhooks and Scheduling API endpoints require a paid plan (Professional/Standard/Standard Plus/Teams/Teams Plus/Enterprise); some org-level endpoints (activity logs, data deletion) are Enterprise-only.",
+    "api_type": [
+      "rest"
+    ],
+    "api_breadth": "moderate",
+    "openapi_spec": "yes",
+    "existing_mcp": "official",
+    "mcp_url": "https://mcp.calendly.com",
+    "webhooks": "yes",
+    "sandbox_or_test_mode": "unknown",
+    "rate_limits_documented": "unknown",
+    "on_composio": "yes",
+    "verdict": "ready",
+    "blocker": null,
+    "blocker_notes": null,
+    "evidence": [
+      {
+        "field": "auth_methods",
+        "url": "https://calendly.com/help/calendly-api-overview",
+        "quote": "Each request is secured with a personal access token (PAT), which lets the API know what you're allowed to do."
+      },
+      {
+        "field": "auth_methods",
+        "url": "https://calendly.com/help/calendly-api-overview",
+        "quote": "can also integrate your app using OAuth 2.0 for secure authorization"
+      },
+      {
+        "field": "access",
+        "url": "https://developer.calendly.com/frequently-asked-questions",
+        "quote": "Developers can make GET and POST requests to API endpoints on behalf of a Calendly user on any subscription plan, including the Free plan"
+      },
+      {
+        "field": "access",
+        "url": "https://developer.calendly.com/frequently-asked-questions",
+        "quote": "The Calendly user account for which the webhook subscription is being made will need a paid subscription on the Standard, Teams, or Enterprise plan."
+      },
+      {
+        "field": "api_type",
+        "url": "https://developer.calendly.com/api-docs",
+        "quote": "Subscribe to Scheduling, Contacts, and Notetaker events and get real-time notifications the moment they happen."
+      },
+      {
+        "field": "openapi_spec",
+        "url": "https://developer.calendly.com/getting-started",
+        "quote": "Access the OpenAPI specification at https://developer.calendly.com/openapi/calendly-api.yaml"
+      },
+      {
+        "field": "existing_mcp",
+        "url": "https://developer.calendly.com/docs/mcp/calendly-mcp-server",
+        "quote": "The server is fully hosted by Calendly at https://mcp.calendly.com."
+      },
+      {
+        "field": "existing_mcp",
+        "url": "https://developer.calendly.com/docs/mcp/calendly-mcp-server",
+        "quote": "Calendly MCP uses Dynamic Client Registration (DCR), which means you do not need to pre-register an OAuth application"
+      },
+      {
+        "field": "verdict",
+        "url": "https://developer.calendly.com/getting-started",
+        "quote": "Developers can make GET and POST requests to API endpoints on behalf of a Calendly user on any subscription plan"
+      }
+    ],
+    "confidence": 0.85,
+    "needs_human": false,
+    "needs_human_reason": null,
+    "pass": "v1",
+    "verification": {
+      "composio": {
+        "slug": "CALENDLY"
+      }
+    },
+    "missing_evidence_for": [],
+    "rule_id": "R5"
+  },
+  {
+    "id": 957,
+    "name": "Cal.com",
+    "category": "Scheduling & Calendar",
+    "one_liner": "Open-source scheduling platform with a REST API for bookings, event types, availability, and calendar sync.",
+    "docs_url": "https://cal.com/docs/api-reference/v2/introduction",
+    "auth_methods": [
+      "api_key",
+      "oauth2",
+      "bearer_token"
+    ],
+    "primary_auth": "api_key",
+    "access": "self_serve_free",
+    "access_notes": "Cal.com's API v2 docs state auth is via Bearer API key (generated in Settings > Developer > API Keys) or OAuth; API key creation appears available on any account. However, the official pricing page explicitly lists 'Custom APIs' as a Teams-plan feature and 'Additional APIs' under Organizations, which contradicts the docs' implication of universal API-key access. This discrepancy was not fully resolved from official sources alone (one supporting data point came from a WebSearch synthesis, not a directly fetched quote) \u2014 flagging for human review. Separately, Cal.com also sells a distinct 'Platform API' product for embedding scheduling into third-party apps, priced from $299/month \u2014 that is unrelated to the general REST API key access described above.",
+    "api_type": [
+      "rest"
+    ],
+    "api_breadth": "broad",
+    "openapi_spec": "unknown",
+    "existing_mcp": "official",
+    "mcp_url": "https://mcp.cal.com/mcp",
+    "webhooks": "yes",
+    "sandbox_or_test_mode": "yes",
+    "rate_limits_documented": "yes",
+    "on_composio": "no",
+    "verdict": "ready",
+    "blocker": null,
+    "blocker_notes": null,
+    "evidence": [
+      {
+        "field": "auth_methods",
+        "url": "https://cal.com/docs/api-reference/v2/introduction",
+        "quote": "'Authorization': 'Bearer YOUR_API_KEY' in your request header."
+      },
+      {
+        "field": "access",
+        "url": "https://cal.com/pricing",
+        "quote": "Remove Cal.com branding, Routing forms, Booking analytics, Custom APIs"
+      },
+      {
+        "field": "api_type",
+        "url": "https://cal.com/docs/api-reference/v2/bookings/get-a-booking",
+        "quote": "GET /v2/bookings/{bookingUid}"
+      },
+      {
+        "field": "existing_mcp",
+        "url": "https://cal.com/docs/mcp-server",
+        "quote": "Connect AI clients to Cal.com scheduling through the Model Context Protocol using the hosted server at mcp.cal.com or a local instance."
+      },
+      {
+        "field": "verdict",
+        "url": "https://cal.com/docs/api-reference/v2/introduction",
+        "quote": "Teams customers: All endpoints except Platform and Orgs"
+      }
+    ],
+    "confidence": 0.7,
+    "needs_human": true,
+    "needs_human_reason": "Contradiction between API v2 docs (suggesting API keys are available to any account via Settings > Developer) and the official pricing page (which lists 'Custom APIs' as a Teams-tier-only feature and 'Additional APIs' as Organizations-tier). Could not fully resolve which endpoints/scopes actually require a paid plan from official sources alone.",
+    "pass": "v1",
+    "verification": {},
+    "missing_evidence_for": [],
+    "rule_id": "R5"
+  }
+]
