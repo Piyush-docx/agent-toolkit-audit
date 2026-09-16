@@ -1,0 +1,13 @@
+# Pinned to what was verified working on Python 3.13 (see docs/DECISIONS.md).
+pydantic==2.12.5
+pytest==9.1.1
+httpx==0.28.1
+jinja2==3.1.6
+selectolax==0.3.27      # fast HTML -> text for evidence checks
+rapidfuzz==3.10.1       # fuzzy quote matching in verify Loop A
+python-dotenv==1.0.1
+
+# Optional, NOT installed by `make setup` -- a fresh clone must not pull a
+# ~300 MB browser download just to run the tests:
+#   playwright==1.49.0   # JS-rendered docs fallback (make setup-browser)
+#   composio==0.8.14     # only needed if COMPOSIO_API_KEY is set

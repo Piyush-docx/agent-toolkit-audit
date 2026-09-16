@@ -11,15 +11,16 @@ Status: `[ ]` todo · `[~]` in progress · `[x]` done · 🛑 = human gate
 - [x] Scaffold repo dirs + .gitignore
 - [x] docs/DECISIONS.md with backend choices
 - [x] tasks/todo.md (this file)
-- [ ] Commit `chore: P0 setup`
+- [x] Commit `chore: P0 setup`
 
-## P1 — Schema and rules (0:15–0:40)
-- [ ] data/apps.csv — exactly 100 rows from brief Section 2
-- [ ] agent/schema.py — pydantic v2 models + enums
-- [ ] agent/rules.py — deterministic verdict rules
-- [ ] tests/ — schema, rules, normaliser unit tests
-- [ ] requirements.txt (pinned), .env.example, Makefile
-- [ ] `make test` green; apps.csv row count == 100
+## P1 — Schema and rules (0:15–0:40) ✅
+- [x] data/apps.csv — exactly 100 rows, ids 1–100, 10 categories × 10
+- [x] agent/schema.py — pydantic v2 models + enums (`pass` alias, soft evidence flag)
+- [x] agent/normalise.py — field-aware canonicalisation for scoring + Loop E
+- [x] agent/rules.py — R1–R6 precedence + 11 Loop E consistency checks
+- [x] tests/ — 90 tests green (apps.csv 13, schema 20, normalise 23, rules 34)
+- [x] requirements.txt (pinned), .env.example, Makefile (all §5 targets)
+- [x] D10–D15 + rule precedence table recorded in docs/DECISIONS.md
 
 ## P2 — Research agent + 5-app slice (0:40–1:30)
 - [ ] agent/llm.py (claude_code default, anthropic_api optional)
