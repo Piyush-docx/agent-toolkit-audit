@@ -23,6 +23,16 @@ All items below were **verified by running the command**, not assumed from the b
 - List toolkits: `GET /toolkits`, header `x-api-key`, params include `search`, `limit` (max 1000), `cursor`.
 - Source: https://docs.composio.dev/reference/api-reference/toolkits/getToolkits
 
+## P2 — composio_check.py built and verified (2026-09-16)
+
+| # | Decision | Why |
+|---|---|---|
+| D10 | `COMPOSIO_API_KEY` already present in `.env` (gitignored) and confirmed live: `GET /toolkits?search=stripe` → 200 with full toolkit metadata (426 tools, auth schemes) | Real tool call, not assumed. Used as-is per project convention — never printed, rotated, or committed. |
+| D11 | `agent/composio_check.py` matches by normalised name/slug against the search results; exact match first, substring fallback (handles "Zoho CRM" vs slug `zohocrm`) | Search API doesn't guarantee exact-name hits; substring fallback avoids false "no" on renamed apps. |
+| D9→ | Keyless path (D8) still implemented as the fallback when no key is set, so the check degrades gracefully rather than failing | Matches brief's requirement to work on a free/no-key setup too. |
+
+Verified on the brief's 5-app slice: Stripe→yes, Salesforce→yes, Sherlock→no, PitchBook→no, fanbasis→no (all via authenticated API, so "no" is a real negative, not just "unknown").
+
 ## P1 — Schema and rules (2026-09-16)
 
 The brief's four verdict rules overlap and are not exhaustive. These four calls change

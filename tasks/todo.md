@@ -27,7 +27,7 @@ Status: `[ ]` todo · `[~]` in progress · `[x]` done · 🛑 = human gate
 - [ ] agent/fetch.py (httpx + cache + text extract, playwright fallback)
 - [ ] agent/prompts.py (PROMPT_VERSION)
 - [ ] agent/research.py (concurrency 2-3, resumable, cached)
-- [ ] agent/composio_check.py
+- [x] agent/composio_check.py — real API call verified (Stripe/Salesforce = yes, Sherlock/PitchBook/fanbasis = no)
 - [ ] Run slice: Stripe(81), Salesforce(1), Sherlock(58), PitchBook(90), fanbasis(50)
 - [ ] 🛑 HUMAN GATE: show 5 records as a table, wait for "continue"
 
