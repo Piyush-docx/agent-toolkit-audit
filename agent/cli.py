@@ -146,6 +146,59 @@ def cmd_sample(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_score(args: argparse.Namespace) -> int:
+    import json
+    from pathlib import Path
+
+    from agent.score import GROUND_TRUTH_PATH, population_stats, score_v1
+
+    if not GROUND_TRUTH_PATH.exists():
+        print(f"no {GROUND_TRUTH_PATH} yet -- fill it in first (see `make sample`)")
+        return 1
+
+    result = score_v1()
+    pop = population_stats()
+
+    print(f"scored against {GROUND_TRUTH_PATH} ({result.overall.total} labelled "
+          f"field(s))")
+    print(f"overall accuracy: {result.overall.correct}/{result.overall.total} "
+          f"= {result.overall.accuracy:.0%}")
+    for field, stats in sorted(result.per_field.items()):
+        print(f"  {field:15s} {stats.correct}/{stats.total} = {stats.accuracy:.0%}")
+    if result.misses:
+        print(f"\nmisses ({len(result.misses)}):")
+        for m in result.misses:
+            j = f" jaccard={m.jaccard:.2f}" if m.jaccard is not None else ""
+            print(f"  #{m.id} {m.name} [{m.field}] truth={m.truth!r} "
+                  f"answer={m.answer!r}{j}")
+
+    print(f"\npopulation (all {pop['apps_total']} researched apps):")
+    print(f"  needs_human: {pop['apps_needing_human']}")
+    print(f"  has evidence: {pop['apps_with_evidence']}")
+
+    out = {
+        "overall": {"correct": result.overall.correct, "total": result.overall.total},
+        "per_field": {f: {"correct": s.correct, "total": s.total}
+                     for f, s in result.per_field.items()},
+        "misses": [m.__dict__ for m in result.misses],
+        "population": pop,
+        "note": ("v1 only -- verify.py (Loops A-E) was scoped out of this "
+                "submission under time pressure, so there is no v2 to compare."),
+    }
+    path = Path("data/score.json")
+    path.write_text(json.dumps(out, indent=2), encoding="utf-8")
+    print(f"\nwrote {path}")
+    return 0
+
+
+def cmd_patterns(args: argparse.Namespace) -> int:
+    from agent.patterns import write_patterns
+
+    path = write_patterns()
+    print(f"wrote {path}")
+    return 0
+
+
 def _not_yet(phase: str):
     def handler(args: argparse.Namespace) -> int:
         print(f"not implemented yet ({phase})")
@@ -182,8 +235,13 @@ def build_parser() -> argparse.ArgumentParser:
     sample = sub.add_parser("sample", help="write blind ground-truth template")
     sample.set_defaults(func=cmd_sample)
 
-    for name, phase in [("verify", "P5"),
-                        ("score", "P7"), ("patterns", "P7"), ("review", "P6")]:
+    score = sub.add_parser("score", help="score v1 against data/ground_truth.csv")
+    score.set_defaults(func=cmd_score)
+
+    patterns = sub.add_parser("patterns", help="write data/patterns.json")
+    patterns.set_defaults(func=cmd_patterns)
+
+    for name, phase in [("verify", "P5"), ("review", "P6")]:
         placeholder = sub.add_parser(name)
         placeholder.set_defaults(func=_not_yet(phase))
 

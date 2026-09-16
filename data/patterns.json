@@ -1,0 +1,371 @@
+{
+  "totals": {
+    "ready_with_friction": 31,
+    "ready": 58,
+    "not_viable": 4,
+    "needs_outreach": 7
+  },
+  "verdict_by_category": {
+    "CRM & Sales": {
+      "ready_with_friction": 4,
+      "ready": 6
+    },
+    "Support & Helpdesk": {
+      "ready": 3,
+      "ready_with_friction": 6,
+      "not_viable": 1
+    },
+    "Communications & Messaging": {
+      "ready": 9,
+      "ready_with_friction": 1
+    },
+    "Marketing, Ads, Email & Social": {
+      "needs_outreach": 3,
+      "ready": 4,
+      "ready_with_friction": 3
+    },
+    "Ecommerce": {
+      "ready": 5,
+      "needs_outreach": 2,
+      "ready_with_friction": 3
+    },
+    "Data, SEO & Scraping": {
+      "ready": 5,
+      "ready_with_friction": 3,
+      "not_viable": 1,
+      "needs_outreach": 1
+    },
+    "Developer, Infra & Data": {
+      "ready": 9,
+      "ready_with_friction": 1
+    },
+    "Productivity & PM": {
+      "ready_with_friction": 3,
+      "ready": 7
+    },
+    "Finance & Fintech": {
+      "ready": 7,
+      "not_viable": 1,
+      "ready_with_friction": 1,
+      "needs_outreach": 1
+    },
+    "AI, Research & Media": {
+      "ready_with_friction": 6,
+      "ready": 3,
+      "not_viable": 1
+    }
+  },
+  "access_by_category": {
+    "CRM & Sales": {
+      "paid_plan": 3,
+      "self_serve_free": 3,
+      "self_serve_trial": 3,
+      "admin_approval": 1
+    },
+    "Support & Helpdesk": {
+      "self_serve_trial": 3,
+      "paid_plan": 4,
+      "unknown": 1,
+      "admin_approval": 2
+    },
+    "Communications & Messaging": {
+      "self_serve_free": 7,
+      "self_serve_trial": 2,
+      "paid_plan": 1
+    },
+    "Marketing, Ads, Email & Social": {
+      "partner_gated": 3,
+      "self_serve_free": 3,
+      "paid_plan": 2,
+      "admin_approval": 1,
+      "self_serve_trial": 1
+    },
+    "Ecommerce": {
+      "self_serve_free": 4,
+      "self_serve_trial": 1,
+      "partner_gated": 2,
+      "paid_plan": 3
+    },
+    "Data, SEO & Scraping": {
+      "self_serve_free": 5,
+      "paid_plan": 3,
+      "no_public_api": 1,
+      "partner_gated": 1
+    },
+    "Developer, Infra & Data": {
+      "self_serve_free": 8,
+      "self_serve_trial": 1,
+      "paid_plan": 1
+    },
+    "Productivity & PM": {
+      "paid_plan": 3,
+      "self_serve_free": 7
+    },
+    "Finance & Fintech": {
+      "self_serve_free": 7,
+      "unknown": 1,
+      "admin_approval": 1,
+      "partner_gated": 1
+    },
+    "AI, Research & Media": {
+      "paid_plan": 6,
+      "self_serve_free": 3,
+      "no_public_api": 1
+    }
+  },
+  "auth": {
+    "primary": {
+      "oauth2": 37,
+      "api_key": 38,
+      "bearer_token": 16,
+      "basic": 3,
+      "jwt": 1,
+      "none": 2,
+      "hmac_signature": 1
+    },
+    "any": {
+      "oauth2": 76,
+      "basic": 16,
+      "bearer_token": 37,
+      "api_key": 50,
+      "other": 5,
+      "jwt": 4,
+      "hmac_signature": 3,
+      "none": 3
+    }
+  },
+  "mcp": {
+    "overall": {
+      "official": 76,
+      "community": 21,
+      "none_found": 3
+    },
+    "by_category": {
+      "CRM & Sales": {
+        "official": 8,
+        "community": 2
+      },
+      "Support & Helpdesk": {
+        "community": 2,
+        "official": 7,
+        "none_found": 1
+      },
+      "Communications & Messaging": {
+        "community": 5,
+        "official": 5
+      },
+      "Marketing, Ads, Email & Social": {
+        "official": 5,
+        "community": 5
+      },
+      "Ecommerce": {
+        "official": 7,
+        "community": 3
+      },
+      "Data, SEO & Scraping": {
+        "official": 8,
+        "community": 1,
+        "none_found": 1
+      },
+      "Developer, Infra & Data": {
+        "official": 10
+      },
+      "Productivity & PM": {
+        "official": 10
+      },
+      "Finance & Fintech": {
+        "official": 8,
+        "community": 1,
+        "none_found": 1
+      },
+      "AI, Research & Media": {
+        "community": 2,
+        "official": 8
+      }
+    }
+  },
+  "on_composio": {
+    "yes": 66,
+    "no": 34
+  },
+  "blocker_frequency": [
+    {
+      "blocker": "paid_plan",
+      "count": 4
+    },
+    {
+      "blocker": "admin_approval",
+      "count": 4
+    },
+    {
+      "blocker": "no_public_api",
+      "count": 1
+    }
+  ],
+  "webhooks": {
+    "unknown": 47,
+    "yes": 50,
+    "no": 3
+  },
+  "sandbox_or_test_mode": {
+    "unknown": 65,
+    "yes": 32,
+    "no": 3
+  },
+  "easy_wins": [
+    {
+      "id": 6,
+      "name": "Podio",
+      "category": "CRM & Sales"
+    },
+    {
+      "id": 7,
+      "name": "Zoho CRM",
+      "category": "CRM & Sales"
+    },
+    {
+      "id": 22,
+      "name": "Twilio",
+      "category": "Communications & Messaging"
+    },
+    {
+      "id": 23,
+      "name": "Zoho Cliq",
+      "category": "Communications & Messaging"
+    },
+    {
+      "id": 24,
+      "name": "Lark (Larksuite)",
+      "category": "Communications & Messaging"
+    },
+    {
+      "id": 30,
+      "name": "Vonage",
+      "category": "Communications & Messaging"
+    },
+    {
+      "id": 42,
+      "name": "WooCommerce",
+      "category": "Ecommerce"
+    },
+    {
+      "id": 43,
+      "name": "BigCommerce",
+      "category": "Ecommerce"
+    },
+    {
+      "id": 47,
+      "name": "Ecwid",
+      "category": "Ecommerce"
+    },
+    {
+      "id": 68,
+      "name": "MongoDB Atlas",
+      "category": "Developer, Infra & Data"
+    },
+    {
+      "id": 83,
+      "name": "Binance",
+      "category": "Finance & Fintech"
+    },
+    {
+      "id": 85,
+      "name": "iPayX",
+      "category": "Finance & Fintech"
+    },
+    {
+      "id": 95,
+      "name": "Reducto",
+      "category": "AI, Research & Media"
+    }
+  ],
+  "needs_outreach": [
+    {
+      "id": 31,
+      "name": "Google Ads",
+      "category": "Marketing, Ads, Email & Social",
+      "access": "partner_gated",
+      "reason": "Requires OAuth2 credentials on a Google Cloud project plus an access-level grant. As of Sept 10, 2026 Google sunset standalone developer tokens; access level now follows the Cloud project. Test Account access is automatic (15,000 ops/day, test accounts only). Explorer access (limited production use, 2,880 ops/day) requires initial API sign-up. Basic access requires completing brand verification for the Cloud project. Standard access (unlimited ops/day) requires a detailed manual audit against Required Minimum Functionality standards, typically ~10 business days. A hobbyist can get test/limited access self-serve, but meaningful production access requires verification/manual review, which is why this is classified partner_gated rather than self_serve."
+    },
+    {
+      "id": 33,
+      "name": "LinkedIn Ads",
+      "category": "Marketing, Ads, Email & Social",
+      "access": "partner_gated",
+      "reason": "Requires creating a LinkedIn Page + developer app, then applying under the app's Products tab; LinkedIn reviews and approves access before any API calls work. Advertising API starts at a restricted 'Development' tier (edit limited to 5 ad accounts); upgrading to unrestricted 'Standard' tier requires a separate support-ticket request and, for some products, a video demo. LinkedIn states it 'reserves the right to review applications and select partners at its discretion' and may reject even qualifying applicants."
+    },
+    {
+      "id": 39,
+      "name": "Threads (Meta)",
+      "category": "Marketing, Ads, Email & Social",
+      "access": "partner_gated",
+      "reason": "Requires creating a Meta developer app, adding the Threads use case, and business verification; publishing/reply permissions (threads_content_publish, threads_manage_replies, threads_delete, etc.) require Meta App Review with a screencast of the user flow before non-developer users can grant them. Own-account testing is possible in dev mode without full review. Details on app-review timelines/business verification came from third-party blogs (singhamandeep.com, postproxy.dev), not official docs, since developers.facebook.com pages fetched did not directly state review requirements."
+    },
+    {
+      "id": 44,
+      "name": "Salesforce Commerce Cloud",
+      "category": "Ecommerce",
+      "access": "partner_gated",
+      "reason": "No public self-serve signup. Sandboxes require being an existing customer or ISV partner; on-demand sandboxes further require purchasing sandbox credits through an existing org."
+    },
+    {
+      "id": 49,
+      "name": "Amazon Selling Partner",
+      "category": "Ecommerce",
+      "access": "partner_gated",
+      "reason": "Requires registering as an SP-API developer (identity verification) plus a Professional selling account for private seller apps ('Individual accounts are not eligible'). Public multi-tenant apps additionally must be listed and approved in the Amazon Selling Partner Appstore, and specific 'roles' must be requested and approved per resource area before an app can call those operations. Not a simple self-serve signup for a general-purpose toolkit serving many customers."
+    },
+    {
+      "id": 59,
+      "name": "Waterfall.io",
+      "category": "Data, SEO & Scraping",
+      "access": "partner_gated",
+      "reason": "No self-serve signup or free tier found on the official site, docs, or pricing page. Pricing is custom-quoted after a benchmark and requires booking a call with sales; a third-party WebSearch snippet claimed 'every user gets an API key after signing up' but this was not confirmed on any officially fetched page, so it is treated as unverified."
+    },
+    {
+      "id": 90,
+      "name": "PitchBook",
+      "category": "Finance & Fintech",
+      "access": "partner_gated",
+      "reason": "The core PitchBook API (api.pitchbook.com) is a paid, contract-gated add-on separate from the platform subscription; no self-serve dashboard or signup exists. Credentials come from an account manager/Direct Data team after a sales engagement, and a sandbox key can be requested post-contract. PitchBook also runs an official MCP server (Premium Connector, premium.mcp.pitchbook.com) gated behind an existing PitchBook subscription and SSO/Okta login, plus MCP integrations with OpenAI/Perplexity for subscribers. Official pitchbook.com pages (pricing, help, premium-connectors, API help, press releases) all returned HTTP 403 to direct fetch, so evidence here is drawn from third-party aggregator/community pages (dlthub.com, pipeline.zoominfo.com, apitracker.io, apigene.ai, siliconangle.com) plus live probes of pitchbook.com's own MCP subdomains (which returned 401/405, confirming the endpoints exist and require auth) \u2014 this is a last-resort reliance on third-party sources since the official docs were unreachable."
+    }
+  ],
+  "not_viable": [
+    {
+      "id": 16,
+      "name": "LiveAgent",
+      "category": "Support & Helpdesk",
+      "access": "unknown",
+      "reason": ""
+    },
+    {
+      "id": 58,
+      "name": "Sherlock",
+      "category": "Data, SEO & Scraping",
+      "access": "no_public_api",
+      "reason": "Sherlock is a local Python CLI (pipx/Docker) that scrapes public profile URLs directly; there is no hosted API, no account/credential system, and the official GitHub repo and README mention no authentication mechanism."
+    },
+    {
+      "id": 84,
+      "name": "Paygent Connect",
+      "category": "Finance & Fintech",
+      "access": "unknown",
+      "reason": "Could not identify a single, verifiable product called 'Paygent Connect' powered by NMI. Web search turns up at least five unrelated entities sharing the 'Paygent' name: (1) a UK card-processing ISO at paygent.co.uk, described in third-party search snippets as 'a fast-growing partner of award-winning payments provider NetPay Merchant Services' \u2014 this is the closest fintech match to the 'NMI-powered' hint (NMI is a common white-label gateway used by UK ISOs/resellers), but its own site returned HTTP 404 when fetched directly, so no developer docs, pricing, or API details could be verified; (2) Paygent Japan (paygent.co.jp / api.paygent.tech), a Japanese payment gateway with its own login portal, unrelated to NMI; (3) paygent.ai and paygent.net/paygent.tech, AI-agent billing/payment-infrastructure startups, not NMI resellers; (4) a third-party 'Paygent MCP Server' by Obsmetrics found on PulseMCP, which is an AI-agent safety/guardrail tool, not an integration with any Paygent payment company. None of these could be confirmed via a fetched page to be 'Paygent Connect' specifically. No third-party blog was used as a factual source beyond noting these disambiguation search snippets; no WebFetch of an actual Paygent Connect doc/pricing page succeeded (paygent.co.uk 404'd)."
+    },
+    {
+      "id": 98,
+      "name": "Mermaid CLI",
+      "category": "AI, Research & Media",
+      "access": "no_public_api",
+      "reason": "mermaid-cli is a local Node.js tool (npm package @mermaid-js/mermaid-cli, binary `mmdc`) and Docker image; there is no hosted API or account/credential system to obtain. It ships an internal Node.js API but the docs explicitly say it is not covered by semver, i.e. not a stable public interface."
+    }
+  ],
+  "apps_total": 100,
+  "headlines": [
+    "58 of 100 apps are ready to use as an agent toolkit today, no negotiation or waiting required.",
+    "Counting ready-with-friction apps too, 89 of 100 are usable with some setup cost (a paid plan or admin approval).",
+    "oauth2 is the most common auth method, appearing in 76% of researched apps.",
+    "76 apps already publish an official MCP server.",
+    "66 of 100 apps are already available as a Composio toolkit; 13 ready apps are not yet on Composio -- an easy-wins list."
+  ]
+}

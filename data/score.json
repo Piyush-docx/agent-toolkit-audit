@@ -1,0 +1,121 @@
+{
+  "overall": {
+    "correct": 21,
+    "total": 30
+  },
+  "per_field": {
+    "auth_methods": {
+      "correct": 0,
+      "total": 5
+    },
+    "access": {
+      "correct": 4,
+      "total": 5
+    },
+    "api_type": {
+      "correct": 4,
+      "total": 5
+    },
+    "existing_mcp": {
+      "correct": 4,
+      "total": 5
+    },
+    "webhooks": {
+      "correct": 5,
+      "total": 5
+    },
+    "verdict": {
+      "correct": 4,
+      "total": 5
+    }
+  },
+  "misses": [
+    {
+      "id": 21,
+      "name": "Slack",
+      "field": "auth_methods",
+      "truth": "oauth2",
+      "answer": "bearer_token,oauth2",
+      "jaccard": 0.5,
+      "cause": "other"
+    },
+    {
+      "id": 21,
+      "name": "Slack",
+      "field": "api_type",
+      "truth": "rest",
+      "answer": "rest,websocket",
+      "jaccard": 0.5,
+      "cause": "other"
+    },
+    {
+      "id": 21,
+      "name": "Slack",
+      "field": "existing_mcp",
+      "truth": "official",
+      "answer": "community",
+      "jaccard": null,
+      "cause": "other"
+    },
+    {
+      "id": 41,
+      "name": "Shopify",
+      "field": "auth_methods",
+      "truth": "api_key,oauth2",
+      "answer": "bearer_token,oauth2",
+      "jaccard": 0.3333333333333333,
+      "cause": "other"
+    },
+    {
+      "id": 61,
+      "name": "GitHub",
+      "field": "auth_methods",
+      "truth": "api_key,oauth2",
+      "answer": "api_key,basic,bearer_token,oauth2",
+      "jaccard": 0.5,
+      "cause": "other"
+    },
+    {
+      "id": 71,
+      "name": "Notion",
+      "field": "auth_methods",
+      "truth": "api_key,oauth2",
+      "answer": "bearer_token,oauth2",
+      "jaccard": 0.3333333333333333,
+      "cause": "other"
+    },
+    {
+      "id": 71,
+      "name": "Notion",
+      "field": "access",
+      "truth": "self_serve_free",
+      "answer": "paid_plan",
+      "jaccard": null,
+      "cause": "other"
+    },
+    {
+      "id": 71,
+      "name": "Notion",
+      "field": "verdict",
+      "truth": "ready",
+      "answer": "ready_with_friction",
+      "jaccard": null,
+      "cause": "other"
+    },
+    {
+      "id": 81,
+      "name": "Stripe",
+      "field": "auth_methods",
+      "truth": "api_key",
+      "answer": "basic,bearer_token,oauth2",
+      "jaccard": 0.0,
+      "cause": "other"
+    }
+  ],
+  "population": {
+    "apps_total": 100,
+    "apps_needing_human": 64,
+    "apps_with_evidence": 99
+  },
+  "note": "v1 only -- verify.py (Loops A-E) was scoped out of this submission under time pressure, so there is no v2 to compare."
+}
