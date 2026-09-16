@@ -16,5 +16,9 @@ node_modules/
 # os
 .DS_Store
 
+# local Claude Code state (machine-specific, not project config)
+.claude/settings.local.json
+.claude/scheduled_tasks.lock
+
 # provided skills pack (not ours to version)
 agent-skills
