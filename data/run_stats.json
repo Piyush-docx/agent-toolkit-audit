@@ -1,0 +1,15 @@
+{
+  "apps_attempted": 1,
+  "apps_succeeded": 0,
+  "apps_failed": 1,
+  "repairs_attempted": 0,
+  "repairs_succeeded": 0,
+  "llm_calls": 1,
+  "total_cost_usd": 0.7632041999999998,
+  "wall_time_s": 221.5,
+  "needs_human": 1,
+  "prompt_version": "v1.0",
+  "model": "sonnet",
+  "errors": [],
+  "stopped_early": null
+}

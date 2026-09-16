@@ -154,3 +154,13 @@ def test_json_schema_generates():
     schema = AppRecord.model_json_schema()
     assert "pass" in schema["properties"]
     assert "pass_" not in schema["properties"]
+
+
+@pytest.mark.parametrize("raw,expected", [
+    ("Checkout &amp; payments", "Checkout & payments"),
+    ("A &lt;b&gt; tag", "A <b> tag"),
+    ("plain text", "plain text"),
+])
+def test_html_entities_are_unescaped(raw, expected):
+    """fanbasis v1 really produced 'Creator/seller checkout &amp; payments'."""
+    assert AppRecord.model_validate({**MINIMAL, "one_liner": raw}).one_liner == expected

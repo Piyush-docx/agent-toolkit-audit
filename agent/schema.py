@@ -14,6 +14,7 @@ Two deliberate deviations from the brief, recorded in docs/DECISIONS.md:
 
 from __future__ import annotations
 
+import html
 from enum import Enum
 from typing import Annotated, Any, Literal, Optional
 
@@ -127,7 +128,9 @@ def _max_words(limit: int):
     matters for Loop A quote matching against fetched page text.
     """
     def check(value: str) -> str:
-        cleaned = " ".join(value.split())
+        # Model quotes are copied from rendered pages, so HTML entities ride
+        # along ("&amp;"). Unescape here: this text is rendered as text later.
+        cleaned = " ".join(html.unescape(value).split())
         count = len(cleaned.split())
         if count > limit:
             raise ValueError(f"must be <= {limit} words, got {count}")

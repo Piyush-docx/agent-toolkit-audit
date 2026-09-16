@@ -92,29 +92,38 @@ def complete_claude_code(
         raise LLMError(f"claude timed out after {timeout}s") from exc
     elapsed = time.monotonic() - started
 
-    if proc.returncode != 0:
+    # A non-zero exit still often carries a complete JSON envelope on stdout
+    # (notably when --max-turns is exhausted), so parse before judging.
+    envelope = None
+    if proc.stdout.strip():
+        try:
+            envelope = json.loads(proc.stdout)
+        except json.JSONDecodeError:
+            envelope = None
+
+    if envelope is None:
         detail = (proc.stderr or proc.stdout or "").strip()[:500]
-        raise LLMError(
-            f"claude exited {proc.returncode}: {detail}",
-            usage_limited=_looks_usage_limited(detail),
-        )
-
-    try:
-        envelope = json.loads(proc.stdout)
-    except json.JSONDecodeError as exc:
-        raise LLMError(f"claude output was not JSON: {proc.stdout[:300]}") from exc
-
-    if envelope.get("is_error"):
-        detail = str(envelope.get("result") or envelope.get("subtype") or "")[:500]
-        raise LLMError(
-            f"claude reported an error: {detail}",
-            usage_limited=_looks_usage_limited(detail),
-        )
+        if proc.returncode != 0:
+            raise LLMError(
+                f"claude exited {proc.returncode}: {detail}",
+                usage_limited=_looks_usage_limited(detail),
+            )
+        raise LLMError(f"claude output was not JSON: {proc.stdout[:300]}")
 
     raw = envelope.get("result") or ""
     data = envelope.get("structured_output")
     if data is None and raw:
         data = _loads_or_none(raw)
+
+    # An errored envelope still deserves a look: hitting --max-turns on a hard
+    # app costs real money and usually leaves usable structured output behind.
+    # Only raise when there is genuinely nothing to salvage.
+    if envelope.get("is_error") and not isinstance(data, dict):
+        detail = str(envelope.get("result") or envelope.get("subtype") or "")[:500]
+        raise LLMError(
+            f"claude reported an error: {detail}",
+            usage_limited=_looks_usage_limited(detail),
+        )
 
     return LLMResult(
         data=data if isinstance(data, dict) else None,

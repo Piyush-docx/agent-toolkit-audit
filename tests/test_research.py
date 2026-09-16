@@ -154,3 +154,20 @@ def test_select_unknown_name_fails_loudly():
 def test_select_by_ids():
     chosen = research.select_apps(research.load_apps(), ids=[1, 58, 81])
     assert [a["id"] for a in chosen] == [1, 58, 81]
+
+
+def test_consistency_errors_are_flagged_at_write_time(monkeypatch):
+    """Stripe v1 really produced primary_auth=api_key with api_key absent."""
+    call, _ = fake_llm([{**GOOD, "auth_methods": ["basic", "oauth2"],
+                         "primary_auth": "api_key"}])
+    monkeypatch.setattr(research, "complete_claude_code", call)
+    record = research.research_app(APP)
+    assert record.needs_human is True
+    assert "primary_auth_not_in_list" in record.needs_human_reason
+    assert record.verification["consistency"]
+
+
+def test_clean_record_records_no_consistency_problems(monkeypatch):
+    call, _ = fake_llm([GOOD])
+    monkeypatch.setattr(research, "complete_claude_code", call)
+    assert "consistency" not in research.research_app(APP).verification

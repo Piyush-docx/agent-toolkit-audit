@@ -107,8 +107,9 @@ def test_ordinary_failure_is_not_usage_limited(fake_run):
     assert excinfo.value.usage_limited is False
 
 
-def test_is_error_envelope_raises(fake_run):
-    fake_run(stdout=_envelope(is_error=True, result="model overloaded"))
+def test_is_error_envelope_raises_when_nothing_to_salvage(fake_run):
+    fake_run(stdout=_envelope(is_error=True, structured_output=None,
+                              result="model overloaded"))
     with pytest.raises(llm.LLMError, match="overloaded"):
         llm.complete_claude_code("hi")
 
@@ -142,3 +143,19 @@ def test_unknown_backend_raises(monkeypatch):
     monkeypatch.delenv("LLM_BACKEND", raising=False)
     with pytest.raises(llm.LLMError, match="unknown backend"):
         llm.get_backend("gpt")
+
+
+# --- salvaging partial work (the fanbasis case) ----------------------------
+
+def test_max_turns_envelope_is_salvaged_when_output_exists(fake_run):
+    """Hitting --max-turns cost real money; keep the structured output."""
+    fake_run(stdout=_envelope(is_error=True, subtype="error_max_turns"),
+             returncode=1)
+    assert llm.complete_claude_code("hi").data == {"ok": True}
+
+
+def test_errored_envelope_without_output_still_raises(fake_run):
+    fake_run(stdout=_envelope(is_error=True, structured_output=None,
+                              result="nothing usable"), returncode=1)
+    with pytest.raises(llm.LLMError):
+        llm.complete_claude_code("hi")

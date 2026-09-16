@@ -72,3 +72,14 @@ missing `access`) is never silently called "ready". `covered=False` always escal
 | D20 | Composio's `*_MCP` toolkits are a corroborating signal for `existing_mcp` | Independently confirms the brief's "hint says MCP exists" cases (Otter AI 92, Devin 96) without taking the hint on trust. |
 
 Result: **66/100 apps already have a Composio toolkit**, computed from one cached fetch, no API key.
+
+## P2 — Findings from the 5-app slice (2026-09-16)
+
+| # | Decision | Why |
+|---|---|---|
+| D21 | `--max-turns` raised 20 → 40, and an errored envelope is salvaged when structured output exists | fanbasis exhausted 20 turns and Claude Code returned `is_error: true`, discarding ~$0.86 of completed research. Obscure apps legitimately need many search/fetch turns. On re-run it produced a full record. |
+| D22 | A non-zero CLI exit is parsed before being judged an error | The complete JSON envelope is still on stdout when `--max-turns` is hit; treating exit code alone as fatal threw away usable work. |
+| D23 | Usage counters accumulate under a lock | `stats.llm_calls` undercounted (3 for 4 apps) because the thread pool mutated it concurrently. |
+| D24 | Error-level consistency checks run at write time, not only in Loop E | Stripe v1 produced `primary_auth=api_key` with `api_key` absent from `auth_methods`. Cheap contradictions should not sit unflagged in v1. |
+| D25 | HTML entities are unescaped during validation | fanbasis produced "checkout &amp; payments"; this text is rendered as text on the page later. |
+| D26 | `on_composio` is assigned as an enum, not a raw string | Pydantic emitted a serializer warning on every dump. |

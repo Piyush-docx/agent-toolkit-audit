@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import csv
 import json
+import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import asdict, dataclass, field
@@ -27,13 +28,29 @@ from pydantic import ValidationError
 from agent import prompts
 from agent.composio_check import check_all, is_composio_mcp_toolkit
 from agent.llm import DEFAULT_MODEL, LLMError, complete_claude_code
-from agent.rules import apply_rules, rule_needs_human
-from agent.schema import AppRecord, dump_record
+from agent.rules import apply_rules, check_consistency, rule_needs_human
+from agent.schema import AppRecord, YesNoUnknown, dump_record
 
 APPS_CSV = Path("data/apps.csv")
 RAW_DIR = Path("cache/llm/v1")
 RECORDS_DIR = Path("cache/records/v1")
 STATS_PATH = Path("data/run_stats.json")
+
+# Obscure apps legitimately need many search/fetch turns before they can answer.
+# fanbasis exhausted 20 turns in the slice run and lost ~$0.86 of work, so the
+# budget is generous and exhaustion is now salvaged rather than discarded.
+MAX_TURNS = 40
+
+_STATS_LOCK = threading.Lock()
+
+
+def _record_usage(stats: Optional["RunStats"], result) -> None:
+    """Accumulate usage under a lock -- research runs on a thread pool."""
+    if stats is None:
+        return
+    with _STATS_LOCK:
+        stats.llm_calls += 1
+        stats.total_cost_usd += result.cost_usd
 
 
 @dataclass
@@ -110,10 +127,9 @@ def research_app(app: dict, *, model: str = DEFAULT_MODEL,
     schema = AppRecord.model_json_schema()
     prompt = prompts.RESEARCH.format(**app)
 
-    result = complete_claude_code(prompt, schema=schema, model=model)
-    if stats:
-        stats.llm_calls += 1
-        stats.total_cost_usd += result.cost_usd
+    result = complete_claude_code(prompt, schema=schema, model=model,
+                                  max_turns=MAX_TURNS)
+    _record_usage(stats, result)
 
     _save_raw(app["id"], {"app": app, "prompt_version": prompts.PROMPT_VERSION,
                           "model": model, "cost_usd": result.cost_usd,
@@ -128,11 +144,9 @@ def research_app(app: dict, *, model: str = DEFAULT_MODEL,
             stats.repairs_attempted += 1
         repair = complete_claude_code(
             prompt + "\n\n" + prompts.REPAIR.format(name=app["name"], error=error),
-            schema=schema, model=model,
+            schema=schema, model=model, max_turns=MAX_TURNS,
         )
-        if stats:
-            stats.llm_calls += 1
-            stats.total_cost_usd += repair.cost_usd
+        _record_usage(stats, repair)
         _save_raw(app["id"], {"app": app, "repair": True, "raw": repair.raw,
                               "data": repair.data})
         record, error2 = _to_record(app, repair.data)
@@ -165,19 +179,34 @@ def _fallback_record(app: dict, reason: str) -> AppRecord:
     })
 
 
+def _flag(record: AppRecord, reason: str) -> None:
+    """Set needs_human, appending to any existing reason rather than clobbering."""
+    record.needs_human = True
+    record.needs_human_reason = (
+        f"{record.needs_human_reason}; {reason}"
+        if record.needs_human_reason else reason
+    )
+
+
 def finalise(record: AppRecord) -> AppRecord:
-    """Apply the deterministic rules. The rule always wins over the LLM (D14)."""
+    """Apply the deterministic rules. The rule always wins over the LLM (D14).
+
+    Also runs the error-level consistency checks now rather than waiting for
+    Loop E: a self-contradictory record (e.g. primary_auth absent from
+    auth_methods) is cheap to spot and should not sit unflagged in v1.
+    """
     result = apply_rules(record)
     record.verdict = result.verdict
     record.rule_id = result.rule_id
     escalate, reason = rule_needs_human(result)
     if escalate:
-        record.needs_human = True
-        # Keep an existing reason; append rather than overwrite.
-        record.needs_human_reason = (
-            f"{record.needs_human_reason}; {reason}"
-            if record.needs_human_reason else reason
-        )
+        _flag(record, reason)
+
+    errors = [v for v in check_consistency(record) if v.severity == "error"]
+    if errors:
+        record.verification.setdefault("consistency", []).extend(
+            [{"name": v.name, "message": v.message} for v in errors])
+        _flag(record, "consistency: " + "; ".join(v.name for v in errors))
     return record
 
 
@@ -192,7 +221,7 @@ def attach_composio(records: list[AppRecord]) -> None:
         return
     for record in records:
         entry = lookup.get(record.name, {})
-        record.on_composio = entry.get("on_composio", "unknown")
+        record.on_composio = YesNoUnknown(entry.get("on_composio", "unknown"))
         slug = entry.get("composio_slug")
         if slug:
             record.verification.setdefault("composio", {})["slug"] = slug
