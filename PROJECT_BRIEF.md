@@ -341,6 +341,15 @@ Per app (concurrency 2–3, resumable, cached):
 Then run all 100. Then `make freeze-v1`: copy to `data/results_v1.json`, compute its SHA-256 into
 `data/results_v1.sha256`, commit with message `freeze: v1 first pass`. v1 is never edited after this.
 
+### 6a. Holdout generalisation check (P2.5 — do this right after freezing v1)
+
+The 100 apps are the input data, not something baked into the pipeline — `research.py` takes any
+`{name, category, hint}` and runs the same generic prompt regardless of which app it is. Prove this instead
+of just asserting it: pick **2–3 apps NOT in `data/apps.csv`** (one well-known, one obscure — e.g. Calendly and
+a niche SaaS tool of the human's choosing), run `make research-one APP=<name>` completely unedited, and save the
+raw output to `data/holdout_examples.json` alongside a captured terminal log in `docs/holdout_run.log`. This
+is the primary evidence, shown on the page (Section 10, Proof), that the agent generalises beyond the given list.
+
 ---
 
 ## 7. Verification loops (`agent/verify.py`) — the most important part
@@ -441,8 +450,13 @@ Order (a reviewer must get it in ~2 minutes):
    run stats (calls, time, failures); **where a human was needed** (from HUMAN_LOG.md, with counts and examples).
 8. **Verification:** per-field accuracy table v1 / v2 / v2+human; bar chart v1 vs v2; what each loop caught
    (counts from verify_log); **list of misses** with cause; evidence-support rate across all 100.
-9. **Proof / run it yourself:** the exact commands (`make setup`, `make research-one APP=Stripe`), a real captured
-   terminal log of one run, and a sample raw output. If a GitHub Actions `workflow_dispatch` trigger was set up, link it.
+9. **Proof / run it yourself:** open with one explicit sentence: *"This agent runs on Claude Code using the
+   candidate's own Claude subscription, so this page cannot execute it live in your browser — instead, here is
+   a real command, a captured run, and proof it generalizes beyond the given 100."* Then show: the exact commands
+   (`make setup`, `make research-one APP=Stripe`), a real captured terminal log of one run, a sample raw output,
+   and the **holdout results** (Section 6a) run on 2–3 apps not in the original 100, unedited pipeline, to prove
+   the code is generic and not tuned to this list. If a GitHub Actions `workflow_dispatch` trigger was set up
+   (Section 11), link it as the closest thing to a live trigger.
 10. **Honest limitations:** apps that defeated the agent, known weak fields, what we'd do with more time.
 11. **Footer:** generated timestamp, prompt version, data version (v1 sha).
 
@@ -475,9 +489,13 @@ and says why.
 Sections: What this is (2 lines + live link) · Results at a glance (the headline sentences) · How it works (5
 bullets + diagram link) · Requirements (Python 3.11, Claude Code logged in OR ANTHROPIC_API_KEY; optional
 COMPOSIO_API_KEY; optional Playwright) · Quick start (`make setup`, `make research-one APP=Stripe`, `make all`) ·
-Pipeline commands table · Where a human is involved · Verification method + accuracy numbers · Repo layout ·
-Limitations · How AI tools were used (honest: Claude Code + agent-skills built most of the code; the candidate
-designed, reviewed, labelled ground truth and made the calls).
+Pipeline commands table · **Note on execution:** the agent runs on the maintainer's own Claude Code / Claude
+subscription — there is no hosted "click to run" demo, since that would require sharing paid credentials; a
+reviewer with their own Claude Code login or `ANTHROPIC_API_KEY` can rerun any command above, and
+`data/holdout_examples.json` + `docs/holdout_run.log` show it already run successfully on apps outside the
+given 100 · Where a human is involved · Verification method + accuracy numbers · Repo layout · Limitations ·
+How AI tools were used (honest: Claude Code + agent-skills built most of the code; the candidate designed,
+reviewed, labelled ground truth and made the calls).
 
 ---
 
@@ -488,14 +506,15 @@ designed, reviewed, labelled ground truth and made the calls).
 | P0 | Read brief + skills, write `tasks/todo.md`, confirm `claude --help` flags, Composio docs check | 0:00–0:15 | todo exists; DECISIONS.md has backend choices |
 | P1 | Scaffold repo, apps.csv (exactly 100 rows), schema, rules, tests | 0:15–0:40 | `make test` green; apps.csv row count = 100 |
 | P2 | llm.py, fetch.py, prompts, research.py; run 5-app slice | 0:40–1:30 | 5 valid records with evidence → 🛑 human check |
-| P3 | Run all 100 (resumable) + composio check → freeze v1 | 1:30–2:15 | 100 records (errors allowed, flagged); v1 committed + sha |
+| P2.5 | Holdout check: run on 2–3 apps NOT in apps.csv, unedited pipeline | 1:30–1:40 | holdout_examples.json + captured log saved |
+| P3 | Run all 100 (resumable) + composio check → freeze v1 | 1:40–2:25 | 100 records (errors allowed, flagged); v1 committed + sha |
 | P4 | sample.py → template; **human starts labelling in parallel** | 1:30 (parallel) | template exists → 🛑 human fills ground_truth.csv |
-| P5 | verify.py loops A–E → v2 | 2:15–3:15 | results_v2.json, verify_log.json, per-loop counts |
-| P6 | review queue + human overrides (Loop F) | 3:15–3:35 | 🛑 human resolved queue; HUMAN_LOG.md updated |
-| P7 | score.py + patterns.py + headlines | 3:35–4:05 | score.json, patterns.json; 🛑 human approves headlines |
-| P8 | site build + page testing | 4:05–5:05 | page passes checks in Section 10 |
-| P9 | README, code review/simplify pass, security check (no secrets) | 5:05–5:30 | review notes addressed |
-| P10 | Deploy + final acceptance checklist | 5:30–5:50 | 🛑 human deploys; live URL verified; submit |
+| P5 | verify.py loops A–E → v2 | 2:25–3:25 | results_v2.json, verify_log.json, per-loop counts |
+| P6 | review queue + human overrides (Loop F) | 3:25–3:45 | 🛑 human resolved queue; HUMAN_LOG.md updated |
+| P7 | score.py + patterns.py + headlines | 3:45–4:15 | score.json, patterns.json; 🛑 human approves headlines |
+| P8 | site build + page testing | 4:15–5:15 | page passes checks in Section 10 |
+| P9 | README, code review/simplify pass, security check (no secrets) | 5:15–5:40 | review notes addressed |
+| P10 | Deploy + final acceptance checklist | 5:40–6:00 | 🛑 human deploys; live URL verified; submit |
 
 If Pro usage limits hit during P3/P5: commit progress, work on P4/P8 (page with partial data) while waiting, then resume.
 Never spend > 20 min on one app — mark `needs_human` and move on.
@@ -519,6 +538,8 @@ Agent
 
 Proof
 - [ ] Runnable command + captured log (and/or live trigger); repo public; README runs on a fresh clone
+- [ ] Page states plainly that the agent runs on the candidate's own Claude subscription (not a live in-browser demo)
+- [ ] Holdout results (2–3 apps outside the original 100) shown as evidence the pipeline generalises
 
 Verification
 - [ ] Human-labelled sample of 20, labelled blind

@@ -126,6 +126,9 @@ def test_apply_rules_is_total(make_record):
         r = apply_rules(make_record(access=access, blocker=blocker, api_type=api))
         assert isinstance(r.verdict, Verdict)
         assert r.rule_id in {"R1", "R2", "R3", "R4", "R5", "R6"}
+        # NOT_RESEARCHED is reserved for research.py's failure path -- a rule
+        # must never assign it, or a crash could masquerade as a real finding.
+        assert r.verdict is not Verdict.NOT_RESEARCHED
 
 
 # --- Loop E consistency checks --------------------------------------------

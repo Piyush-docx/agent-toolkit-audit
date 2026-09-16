@@ -73,6 +73,53 @@ def cmd_show(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_freeze_v1(args: argparse.Namespace) -> int:
+    """Collect every cached record into data/results_v1.json and hash it.
+
+    Refuses to freeze a partial run: the brief's v1 is "100 records (errors
+    allowed, flagged)" -- a record existing and being flagged needs_human is
+    fine, a record missing entirely is not, since freeze-v1 is a one-way door
+    (v1 is never edited after this).
+    """
+    import hashlib
+    import json
+    from pathlib import Path
+
+    from agent.research import load_apps, load_cached_record
+    from agent.schema import dump_record
+
+    apps = load_apps()
+    records = []
+    missing = []
+    for app in apps:
+        record = load_cached_record(app["id"])
+        if record is None:
+            missing.append(app["id"])
+        else:
+            records.append(dump_record(record))
+
+    if missing:
+        print(f"refusing to freeze: {len(missing)} app(s) not yet researched: "
+              f"{missing}")
+        return 1
+
+    out_path = Path("data/results_v1.json")
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    payload = json.dumps(records, indent=2)
+    out_path.write_text(payload, encoding="utf-8")
+
+    digest = hashlib.sha256(payload.encode("utf-8")).hexdigest()
+    sha_path = Path("data/results_v1.sha256")
+    sha_path.write_text(f"{digest}  results_v1.json\n", encoding="utf-8")
+
+    not_researched = sum(1 for r in records if r["verdict"] == "not_researched")
+    needs_human = sum(1 for r in records if r["needs_human"])
+    print(f"froze {len(records)} records -> {out_path}")
+    print(f"sha256 -> {sha_path}  ({digest})")
+    print(f"needs_human: {needs_human}  not_researched: {not_researched}")
+    return 0
+
+
 def _not_yet(phase: str):
     def handler(args: argparse.Namespace) -> int:
         print(f"not implemented yet ({phase})")
@@ -99,7 +146,10 @@ def build_parser() -> argparse.ArgumentParser:
     show.add_argument("--ids", type=int, nargs="*")
     show.set_defaults(func=cmd_show)
 
-    for name, phase in [("freeze-v1", "P3"), ("verify", "P5"), ("sample", "P4"),
+    freeze = sub.add_parser("freeze-v1", help="freeze results_v1.json + sha256")
+    freeze.set_defaults(func=cmd_freeze_v1)
+
+    for name, phase in [("verify", "P5"), ("sample", "P4"),
                         ("score", "P7"), ("patterns", "P7"), ("review", "P6")]:
         placeholder = sub.add_parser(name)
         placeholder.set_defaults(func=_not_yet(phase))

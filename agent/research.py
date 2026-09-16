@@ -29,7 +29,7 @@ from agent import prompts
 from agent.composio_check import check_all, is_composio_mcp_toolkit
 from agent.llm import DEFAULT_MODEL, LLMError, complete_claude_code
 from agent.rules import apply_rules, check_consistency, rule_needs_human
-from agent.schema import AppRecord, YesNoUnknown, dump_record
+from agent.schema import AppRecord, Verdict, YesNoUnknown, dump_record
 
 APPS_CSV = Path("data/apps.csv")
 RAW_DIR = Path("cache/llm/v1")
@@ -154,6 +154,7 @@ def research_app(app: dict, *, model: str = DEFAULT_MODEL,
             stats.repairs_succeeded += 1
         if record is None:
             record = _fallback_record(app, f"schema invalid after repair: {error2}")
+            return finalise_failed(record)
 
     return finalise(record)
 
@@ -171,12 +172,34 @@ def _to_record(app: dict, data: Optional[dict]) -> tuple[Optional[AppRecord], st
 
 
 def _fallback_record(app: dict, reason: str) -> AppRecord:
-    """A record that says 'we failed', rather than a missing row."""
+    """A record that says 'we failed', rather than a missing row.
+
+    verdict is set to NOT_RESEARCHED here, not left for apply_rules() to fill.
+    The record has no real data (empty api_type, access=None), and running the
+    rules over that empty shell would mechanically produce not_viable/R2 -- a
+    fabricated finding indistinguishable from genuine research (see batch 1/2
+    postmortem: 26/40 apps got a false not_viable verdict this way). finalise()
+    must be skipped for these records; call finalise_failed() instead.
+    """
     return AppRecord.model_validate({
         "id": app["id"], "name": app["name"], "category": app["category"],
         "pass": "v1", "needs_human": True, "needs_human_reason": reason,
-        "confidence": 0.0,
+        "confidence": 0.0, "verdict": Verdict.NOT_RESEARCHED,
     })
+
+
+def finalise_failed(record: AppRecord) -> AppRecord:
+    """Finalise a record whose LLM call never produced usable data.
+
+    Deliberately skips apply_rules(): there is no real data to run rules over,
+    and doing so would silently turn a crash into a fabricated not_viable
+    verdict (see _fallback_record docstring). rule_id stays None so the
+    record is visibly distinct from a real R1-R6 outcome downstream.
+    """
+    record.verdict = Verdict.NOT_RESEARCHED
+    record.rule_id = None
+    record.needs_human = True
+    return record
 
 
 def _flag(record: AppRecord, reason: str) -> None:
@@ -263,8 +286,12 @@ def run(apps: list[dict], *, concurrency: int = 3, model: str = DEFAULT_MODEL,
                             for pending in futures:
                                 pending.cancel()
                             break
+                        if getattr(exc, "envelope", None) is not None:
+                            _save_raw(app["id"], {"app": app, "model": model,
+                                                  "llm_error": str(exc)[:500],
+                                                  "envelope": exc.envelope})
                         record = _fallback_record(app, f"llm error: {exc}")
-                        record = finalise(record)
+                        record = finalise_failed(record)
                         stats.errors.append({"id": app["id"], "name": app["name"],
                                              "error": str(exc)[:300]})
                     records[app["id"]] = record

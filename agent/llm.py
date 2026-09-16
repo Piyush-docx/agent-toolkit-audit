@@ -27,11 +27,19 @@ JUDGE_MODEL = "opus"              # verification judgments (D6)
 
 
 class LLMError(RuntimeError):
-    """Backend failed. `usage_limited` distinguishes 'retry later' from 'broken'."""
+    """Backend failed. `usage_limited` distinguishes 'retry later' from 'broken'.
 
-    def __init__(self, message: str, *, usage_limited: bool = False):
+    `envelope` carries the full parsed CLI response (when one existed) so the
+    caller can persist it for audit even on a hard failure -- e.g.
+    error_max_structured_output_retries gives no salvageable structured_output,
+    but the envelope (subtype, num_turns, cost) is still worth keeping on disk.
+    """
+
+    def __init__(self, message: str, *, usage_limited: bool = False,
+                 envelope: Optional[dict] = None):
         super().__init__(message)
         self.usage_limited = usage_limited
+        self.envelope = envelope
 
 
 @dataclass
@@ -123,6 +131,7 @@ def complete_claude_code(
         raise LLMError(
             f"claude reported an error: {detail}",
             usage_limited=_looks_usage_limited(detail),
+            envelope=envelope,
         )
 
     return LLMResult(

@@ -86,6 +86,10 @@ class Verdict(str, Enum):
     READY_WITH_FRICTION = "ready_with_friction"
     NEEDS_OUTREACH = "needs_outreach"
     NOT_VIABLE = "not_viable"
+    # Not a rule outcome -- means research.py never got usable data (LLM error,
+    # usage limit, schema-repair exhaustion). apply_rules() never assigns this;
+    # only the failure path in research.py does. Always needs_human=True.
+    NOT_RESEARCHED = "not_researched"
 
 
 class Blocker(str, Enum):
@@ -159,9 +163,12 @@ class Evidence(BaseModel):
 class AppRecord(BaseModel):
     """One researched app.
 
-    Invariant after research.py runs: `verdict` is never None on disk, because
-    rules.apply_rules() always fills it. It is Optional on the model so that a
-    model response that omits it still parses (None = "the LLM did not answer").
+    Invariant after research.py runs: `verdict` is never None on disk. Either
+    rules.apply_rules() fills it from real data, or the failure path sets it to
+    Verdict.NOT_RESEARCHED when the LLM call itself never produced usable data
+    (so a crash can never masquerade as a genuine not_viable finding). It is
+    Optional on the model so that a model response that omits it still parses
+    (None = "the LLM did not answer").
 
     `verification` is filled by verify.py (P5); shape:
         {"<field>": {"status": "supported|unsupported|unreachable",

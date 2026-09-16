@@ -84,6 +84,11 @@ def test_failed_repair_yields_a_flagged_record_not_a_crash(monkeypatch):
     record = research.research_app(APP)
     assert record.needs_human is True
     assert "schema invalid after repair" in record.needs_human_reason
+    # A repair-exhausted record must never get a rule-derived verdict: there
+    # is no real data behind it, and apply_rules() would mechanically read
+    # the empty api_type/access as not_viable/R2 -- a fabricated finding.
+    assert record.verdict is Verdict.NOT_RESEARCHED
+    assert record.rule_id is None
 
 
 def test_rule_overrides_model_verdict_and_flags(monkeypatch):
@@ -137,6 +142,27 @@ def test_ordinary_llm_error_produces_a_flagged_record(monkeypatch):
     assert len(records) == 1
     assert records[0].needs_human is True
     assert stats.errors and stats.errors[0]["name"] == "Stripe"
+    # Regression: an LLM-error record used to fall through to apply_rules(),
+    # which read the empty api_type/access as a genuine not_viable/R2 finding
+    # (batch 1/2 postmortem: 26/40 apps got a false not_viable this way).
+    assert records[0].verdict is Verdict.NOT_RESEARCHED
+    assert records[0].rule_id is None
+
+
+def test_llm_error_envelope_is_saved_for_audit(monkeypatch, isolate):
+    """error_max_structured_output_retries (batch 2) left no raw cache entry at
+    all, so a fabricated not_viable verdict had no audit trail to diagnose it
+    from. The envelope must now be persisted whenever the backend supplies one.
+    """
+    envelope = {"is_error": True, "subtype": "error_max_structured_output_retries",
+                "num_turns": 12, "total_cost_usd": 0.41}
+    call, _ = fake_llm([LLMError("claude reported an error: "
+                                 "error_max_structured_output_retries",
+                                 envelope=envelope)])
+    monkeypatch.setattr(research, "complete_claude_code", call)
+    research.run([APP], concurrency=1)
+    saved = json.loads((isolate / "raw" / "81.json").read_text())
+    assert saved["envelope"]["subtype"] == "error_max_structured_output_retries"
 
 
 # --- app selection ---------------------------------------------------------
