@@ -53,34 +53,43 @@ Status: `[ ]` todo · `[~]` in progress · `[x]` done · 🛑 = human gate
 - [x] tests/test_sample.py — 9 tests (stratification, blind-row shape, missing-record safety)
 - [ ] 🛑 HUMAN GATE: human fills data/ground_truth.csv blind (Claude must NOT fill truth values)
 
-## P5 — Verification loops (2:15–3:15)
-- [ ] Loop A evidence existence (httpx→WebFetch→Playwright, rapidfuzz ≥90)
-- [ ] Loop B entailment judge (fresh context, field+quote+url only)
-- [ ] Loop C targeted re-research (max 2 rounds)
-- [ ] Loop D independent cross-check (auth_methods, access, existing_mcp)
-- [ ] Loop E consistency checks
-- [ ] results_v2.json + verify_log.json + per-loop counts
+## P5 — Verification loops — SKIPPED (time constraint)
+- [ ] Not built: Loop A-E, results_v2.json, verify_log.json
+- Stated explicitly as a limitation in README.md and on the results page.
 
-## P6 — Human review queue (3:15–3:35)
-- [ ] `make review` prints needs_human queue
-- [ ] 🛑 HUMAN GATE: human resolves → data/human_overrides.csv + docs/HUMAN_LOG.md
+## P6 — Human review queue — SKIPPED (time constraint)
+- [ ] Not built: `make review`, human_overrides.csv, HUMAN_LOG.md resolution pass
+- Stated explicitly as a limitation in README.md and on the results page.
 
-## P7 — Score + patterns (3:35–4:05)
-- [ ] agent/score.py → data/score.json (v1, v2, v2+human; misses with causes)
-- [ ] agent/patterns.py → data/patterns.json
-- [ ] 4–6 headline sentences (every number checked against patterns.json)
-- [ ] 🛑 HUMAN GATE: human approves headlines
+## P7 — Score + patterns ✅ (reduced scope: v1 only, no v2)
+- [x] agent/score.py → data/score.json — scored against 5 hand-labelled apps (30 fields,
+      70% overall), exact match + Jaccard for lists, unknown-vs-unknown counted correct,
+      every miss listed. No v2 to compare against (see P5).
+- [x] agent/patterns.py → data/patterns.json — verdict/auth/access/MCP distributions per
+      category, easy-wins list, 5 headline sentences traceable to patterns.json
+- [x] tests/test_score.py (10) + tests/test_patterns.py (7) — 17 tests, all green
+- [ ] 🛑 HUMAN GATE (headline approval): skipped — human directed a fast-path submission
 
-## P8 — HTML page (4:05–5:05)
-- [ ] site/build.py + template.html → site/dist/index.html
-- [ ] Agent outputs: results.json, results.csv, patterns.json, score.json, summary.md, llms.txt
-- [ ] Test at 375px and 1440px, filters work, no console errors, evidence links real
+## P8 — HTML page ✅ (reduced scope: no SVG charts/diagram)
+- [x] site/build.py → site/dist/index.html — real build script reading results_v1.json,
+      patterns.json, score.json (not hand-embedded data)
+- [x] Readiness matrix (10×4, clickable cells filter the table), easy-wins/outreach/not-viable
+      lists, full 100-row table with search + category/verdict/needs-human filters,
+      verification section driven by score.json, holdout proof section
+- [x] Light/dark via prefers-color-scheme; tables scroll horizontally in their own container
+- [ ] Skipped: inline SVG charts, pipeline diagram — stated in the page's own limitations section
 
-## P9 — Docs and review (5:05–5:30)
-- [ ] README.md, docs/WALKTHROUGH.md
-- [ ] code-review + simplify pass; security check (no secrets)
+## P9 — Docs and review ✅
+- [x] README.md — quick start, repo layout, human-in-the-loop points, honest limitations,
+      AI-usage disclosure
+- [x] docs/WALKTHROUGH.md — one-page plain-language file-by-file explanation for interview prep
+- [x] Security check: no .env committed, no hardcoded secrets (one grep false-positive was a
+      verbatim Stripe docs quote in results_v1.json)
+- [ ] No formal code-review/simplify agent pass — time constraint
 
-## P10 — Deploy (5:30–5:50)
-- [ ] GitHub Pages workflow / Vercel config
-- [ ] 🛑 HUMAN GATE: human creates public repo, pushes, enables Pages
-- [ ] Verify live URL in incognito; final acceptance checklist (brief §14)
+## P10 — Deploy ✅ (workflow only)
+- [x] .github/workflows/deploy.yml — deploys site/dist/ to GitHub Pages on every push to main
+- [x] Pushed to https://github.com/Piyush-docx/agent-toolkit-audit
+- [ ] 🛑 Manual step still needed: Settings → Pages → Source → GitHub Actions (human must
+      flip this switch; cannot be done via git push)
+- [ ] Live URL not yet verified in incognito — pending the manual step above
