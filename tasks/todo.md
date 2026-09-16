@@ -22,22 +22,35 @@ Status: `[ ]` todo · `[~]` in progress · `[x]` done · 🛑 = human gate
 - [x] requirements.txt (pinned), .env.example, Makefile (all §5 targets)
 - [x] D10–D15 + rule precedence table recorded in docs/DECISIONS.md
 
-## P2 — Research agent + 5-app slice (0:40–1:30)
-- [ ] agent/llm.py (claude_code default, anthropic_api optional)
-- [ ] agent/fetch.py (httpx + cache + text extract, playwright fallback)
-- [ ] agent/prompts.py (PROMPT_VERSION)
-- [ ] agent/research.py (concurrency 2-3, resumable, cached)
+## P2 — Research agent + 5-app slice (0:40–1:30) ✅
+- [x] agent/llm.py (claude_code default, anthropic_api optional) — LLMError now carries the CLI envelope for audit
+- [x] agent/fetch.py (httpx + cache + text extract, playwright fallback)
+- [x] agent/prompts.py (PROMPT_VERSION)
+- [x] agent/research.py (concurrency 2-3, resumable, cached)
 - [x] agent/composio_check.py — real API call verified (Stripe/Salesforce = yes, Sherlock/PitchBook/fanbasis = no)
-- [ ] Run slice: Stripe(81), Salesforce(1), Sherlock(58), PitchBook(90), fanbasis(50)
-- [ ] 🛑 HUMAN GATE: show 5 records as a table, wait for "continue"
+- [x] Run slice: Stripe(81), Salesforce(1), Sherlock(58), PitchBook(90), fanbasis(50)
+- [x] 🛑 HUMAN GATE: showed 5 records, human confirmed — continued to batch 1
 
-## P3 — Full run + freeze v1 (1:30–2:15)
-- [ ] Run all 100 (resumable, respects Pro limits)
-- [ ] Composio check for all
-- [ ] `make freeze-v1` → results_v1.json + .sha256, commit `freeze: v1 first pass`
+## P2.5 — Holdout generalisation check (brief §6a) ✅
+- [x] `--category`/`--hint` CLI flags so an app with no apps.csv row runs through the same command path
+- [x] Ran Calendly (well-known) and Cal.com (obscure/OSS), completely unedited pipeline
+- [x] data/holdout_examples.json + docs/holdout_run.log saved for the page's Proof section
+- [x] Commit `feat: P2.5 holdout generalisation check`
 
-## P4 — Sample template (parallel from 1:30)
-- [ ] agent/sample.py → data/ground_truth_template.csv (links only, NO values)
+## P3 — Full run + freeze v1 (1:30–2:15) ✅
+- [x] Run all 100 (resumable, respects Pro limits) — batches 1–5, plus retries after the bug below
+- [x] Found + fixed a real bug: an LLM error (session limit / structured-output retry
+      exhaustion) fell through to apply_rules(), fabricating a not_viable verdict on
+      empty data. 28 apps affected across batches 1–2. Added Verdict.NOT_RESEARCHED as
+      a sentinel only the failure path can assign; re-ran every affected app for real.
+- [x] Composio check for all
+- [x] `make freeze-v1` → data/results_v1.json + .sha256, commit `freeze: v1 first pass`
+      (58 ready, 31 ready_with_friction, 7 needs_outreach, 4 not_viable, 0 not_researched)
+
+## P4 — Sample template (parallel from 1:30) ✅ (Claude side)
+- [x] agent/sample.py → data/ground_truth_template.csv (120 rows: 20 apps × 6 fields,
+      docs links pre-filled from cached records where known, NO values, NO agent answers)
+- [x] tests/test_sample.py — 9 tests (stratification, blind-row shape, missing-record safety)
 - [ ] 🛑 HUMAN GATE: human fills data/ground_truth.csv blind (Claude must NOT fill truth values)
 
 ## P5 — Verification loops (2:15–3:15)

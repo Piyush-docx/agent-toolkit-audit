@@ -136,6 +136,16 @@ def cmd_freeze_v1(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_sample(args: argparse.Namespace) -> int:
+    from agent.sample import DEFAULT_SAMPLE, TEMPLATE_PATH, write_template
+
+    path = write_template(DEFAULT_SAMPLE)
+    print(f"wrote {len(DEFAULT_SAMPLE)} apps ({len(DEFAULT_SAMPLE) * 6} rows) "
+          f"-> {path}")
+    print("human fills data/ground_truth.csv from here -- blind, no agent answers")
+    return 0
+
+
 def _not_yet(phase: str):
     def handler(args: argparse.Namespace) -> int:
         print(f"not implemented yet ({phase})")
@@ -169,7 +179,10 @@ def build_parser() -> argparse.ArgumentParser:
     freeze = sub.add_parser("freeze-v1", help="freeze results_v1.json + sha256")
     freeze.set_defaults(func=cmd_freeze_v1)
 
-    for name, phase in [("verify", "P5"), ("sample", "P4"),
+    sample = sub.add_parser("sample", help="write blind ground-truth template")
+    sample.set_defaults(func=cmd_sample)
+
+    for name, phase in [("verify", "P5"),
                         ("score", "P7"), ("patterns", "P7"), ("review", "P6")]:
         placeholder = sub.add_parser(name)
         placeholder.set_defaults(func=_not_yet(phase))
