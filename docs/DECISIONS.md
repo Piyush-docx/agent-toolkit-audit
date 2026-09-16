@@ -60,3 +60,15 @@ published results, so they were confirmed with the human before implementing.
 
 R6 is the honesty valve: a shape the spec never described (e.g. self-serve + `sdk_only`, or a
 missing `access`) is never silently called "ready". `covered=False` always escalates to a human.
+
+## P2 — Composio check (2026-09-16)
+
+| # | Decision | Why |
+|---|---|---|
+| D16 | **Supersedes D8.** `on_composio` uses `https://docs.composio.dev/toolkits.md` — one keyless fetch listing all 1517 toolkits with display names and slugs | Found via the official Composio agent skill. D8 assumed absence was unprovable because `composio.dev/toolkits` is client-paginated; the docs index is complete, so a miss is now real evidence of absence. This is what makes the "ready but not on Composio = easy win" list trustworthy. |
+| D17 | Match by normalised **display name**, never by a guessed slug | Slugs are not derivable from names: Google Ads → `googleads`, Bright Data → `brightdata`, Zoho CRM → absent entirely. Guessing slugs produced false negatives. |
+| D18 | Also match `<app>mcp` | Seven apps are listed only as "<App> MCP" (Clay, Netlify, Plaid, Devin, Otter.ai, Pylon, higgsfield). Missing these wrongly inflated the easy-wins list. Raised coverage 58 → 65. |
+| D19 | Similar-but-different names are deliberately NOT aliased | Gladly ≠ Gladia, Squarespace ≠ Square, Zoho CRM ≠ Zoho (generic), Smartsheet ≠ Smartlead, Amazon Selling Partner ≠ Amazing Marvin. A false "yes" is worse than an honest "no"; the rejections are listed in code so they read as a decision, not an oversight. |
+| D20 | Composio's `*_MCP` toolkits are a corroborating signal for `existing_mcp` | Independently confirms the brief's "hint says MCP exists" cases (Otter AI 92, Devin 96) without taking the hint on trust. |
+
+Result: **66/100 apps already have a Composio toolkit**, computed from one cached fetch, no API key.
