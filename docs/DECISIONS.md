@@ -83,3 +83,13 @@ Result: **66/100 apps already have a Composio toolkit**, computed from one cache
 | D24 | Error-level consistency checks run at write time, not only in Loop E | Stripe v1 produced `primary_auth=api_key` with `api_key` absent from `auth_methods`. Cheap contradictions should not sit unflagged in v1. |
 | D25 | HTML entities are unescaped during validation | fanbasis produced "checkout &amp; payments"; this text is rendered as text on the page later. |
 | D26 | `on_composio` is assigned as an enum, not a raw string | Pydantic emitted a serializer warning on every dump. |
+
+## Post-submission — real Composio SDK integration (2026-09-17)
+
+| # | Decision | Why |
+|---|---|---|
+| D27 | `composio_check.py` uses the real `composio` Python SDK (`composio.client.toolkits.list`) as the **primary** source, falling back to the D16 keyless docs index only when `COMPOSIO_API_KEY` is unset or the SDK call fails | The original design (D16) used only the keyless docs page. Re-reading the actual task after most of the build was done: "Using Composio's own SDK and MCP to build it is in the spirit of the role" is an explicit signal, and the keyless-index-only design used zero Composio SDK/MCP anywhere in the pipeline. This closes that gap with a real, load-bearing integration rather than a cosmetic one. |
+| D28 | The SDK's high-level `composio.toolkits.get()` wrapper silently truncates at 1000 items | Empirically confirmed: 1543 toolkits exist across 16 pages at `limit=200`, but `.get()` with no args or with `query={"limit": 2000}` both stopped at exactly 1000, silently missing real toolkits (Twilio, Netlify, Vercel, Plaid, QuickBooks). Using the truncated result would have produced **false negatives** — worse than not switching to the SDK at all. Fixed by calling the lower-level `composio.client.toolkits.list(cursor=...)` directly and walking every page via `next_cursor` until it's null. |
+| D29 | Verified the SDK path against the already-frozen `results_v1.json` before treating it as correct | Ran `check_all()` with the new SDK path over all 100 apps' names and diffed `on_composio` against what's already on disk: **zero apps changed** (66/100 on Composio either way). This is real evidence the two sources agree, not an assumption — the frozen v1 data did not need to be regenerated, only the code path producing it going forward. |
+
+Net effect: the pipeline now makes a real, verified call into Composio's own SDK as part of its research process, not only as a docs scrape. The keyless index remains as an honest fallback for a reviewer who runs this without a Composio key, matching the brief's own stated assumption that a reviewer may not have every credential.

@@ -295,10 +295,14 @@ existing MCP server, and a verdict — with a required verbatim evidence quote +
 access + REST/GraphQL → <code>ready</code>; paid/admin-gated access → <code>ready_with_friction</code>;
 partner-gated access → <code>needs_outreach</code>; no public API or CLI-only → <code>not_viable</code>. The
 rule always overrides the model's own guess; disagreements are flagged for human review.</p>
-<p><strong>Composio check:</strong> cross-referenced against Composio's public toolkit index
-(<code>docs.composio.dev/toolkits.md</code>) — no API key needed, so "not listed" is a trustworthy negative.</p>
-<p><strong>Tools/backends:</strong> Claude Code (sonnet), WebSearch/WebFetch, httpx, selectolax for text
-extraction, rapidfuzz for evidence quote matching. Concurrency 2–3, resumable/cached per app.</p>
+<p><strong>Composio check:</strong> every app is checked against Composio's own toolkit catalog
+via the real <code>composio</code> Python SDK (<code>composio.client.toolkits.list</code>, fully
+paginated across all 1543 toolkits) when a <code>COMPOSIO_API_KEY</code> is set — falling back to a
+keyless public docs index otherwise. Both sources agree exactly on all 100 apps here (66/100 on
+Composio); the fallback exists so a reviewer without a Composio key still gets a real answer.</p>
+<p><strong>Tools/backends:</strong> Claude Code (sonnet), WebSearch/WebFetch, the Composio Python
+SDK, httpx, selectolax for text extraction, rapidfuzz for evidence quote matching. Concurrency 2–3,
+resumable/cached per app.</p>
 </div>
 </section>
 

@@ -11,7 +11,8 @@ from a page it actually fetched.
 
 - **58 ready**, 31 ready-with-friction, 7 need outreach, 4 not viable (of 100)
 - **64 apps** flagged for human review (evidence gaps or rule/model disagreements)
-- **66 apps** already exist as a Composio toolkit
+- **66 apps** already exist as a Composio toolkit — checked via the real Composio SDK
+  (`composio.client.toolkits.list`, fully paginated), not just a docs scrape
 - 2 holdout apps (never in the input list) researched through the unedited pipeline, proving
   it generalizes rather than being tuned to these 100 — see `data/holdout_examples.json`
 
@@ -19,17 +20,22 @@ from a page it actually fetched.
 
 - Python 3.11+
 - Claude Code CLI, logged in (`claude` on PATH) — no API key needed for the default backend
-- Optional: `ANTHROPIC_API_KEY` for the `anthropic_api` backend, `COMPOSIO_API_KEY` (not
-  required — the Composio check uses a keyless public docs index)
+- Recommended: `COMPOSIO_API_KEY` (free at dashboard.composio.dev) — the "already on
+  Composio?" check uses the real Composio SDK when this is set, and falls back to a keyless
+  public docs index otherwise (both agree on all 100 apps in this study; see `docs/DECISIONS.md` D27–D29)
+- Optional: `ANTHROPIC_API_KEY` for the `anthropic_api` backend
 
 ## Quick start
 
 ```bash
 make setup                                  # create venv, install deps
-make test                                   # pytest -q, 160 tests
+make test                                   # pytest -q, 181 tests
 make research-one APP="Stripe"              # research one app end to end
 python3 -m agent.cli freeze-v1              # collect all cached records -> results_v1.json
 python3 -m agent.cli sample                 # write the blind ground-truth template
+python3 -m agent.cli score                  # score v1 against data/ground_truth.csv
+python3 -m agent.cli patterns               # compute data/patterns.json
+python3 site/build.py                       # rebuild site/dist/index.html from the data above
 ```
 
 Holdout mode (an app not in `data/apps.csv`):
@@ -42,11 +48,13 @@ python3 -m agent.cli research --app "Calendly" --category "Scheduling & Calendar
 ## Repo layout
 
 ```
-agent/            research pipeline: schema, rules, LLM backend, fetch, sample, cli
-data/             apps.csv, results_v1.json (+ sha256), ground_truth.csv, holdout_examples.json
-docs/             DECISIONS.md (every non-obvious call, with why), holdout_run.log
-site/dist/        the built results page (self-contained HTML, no build step to view)
-tests/            160 tests covering schema, rules, research orchestration, sample
+agent/            research pipeline: schema, rules, LLM backend, fetch, composio_check,
+                   sample, score, patterns, cli
+data/             apps.csv, results_v1.json (+ sha256), ground_truth.csv, holdout_examples.json,
+                   score.json, patterns.json
+docs/             DECISIONS.md (every non-obvious call, with why), WALKTHROUGH.md, holdout_run.log
+site/              build.py (generates the page from data/) -> dist/index.html
+tests/            181 tests covering schema, rules, research orchestration, sample, score, patterns
 tasks/todo.md     phase-by-phase progress against PROJECT_BRIEF.md
 ```
 
@@ -66,10 +74,11 @@ genuinely researched with verbatim evidence quotes and source URLs; a real pipel
 mid-run and fixed rather than shipped; the fix is covered by regression tests.
 
 What's scoped out: the brief's full verification loops (A–E: evidence re-check, LLM
-entailment judge, targeted re-research, independent cross-check), the 20-app stratified
-ground truth (only 5 apps were hand-checked, human-confirmed, 21/30 fields = 70% match),
-the human review queue, and dedicated `score.py`/`patterns.py` modules. The results page
-states this directly rather than hiding it.
+entailment judge, targeted re-research, independent cross-check), and the full 20-app
+stratified ground truth (only 5 apps were hand-checked, human-confirmed, 21/30 fields =
+70% match) — `score.py` and `patterns.py` are real modules with tests, but they only have
+v1 to score, not a v2. The human review queue (Loop F) was also not built. The results
+page states this directly rather than hiding it.
 
 See `docs/DECISIONS.md` for every non-obvious design call and why it was made.
 

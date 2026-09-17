@@ -7,7 +7,10 @@ selectolax==0.3.27      # fast HTML -> text for evidence checks
 rapidfuzz==3.10.1       # fuzzy quote matching in verify Loop A
 python-dotenv==1.0.1
 
+composio==0.21.1        # real "on Composio?" check via the SDK when
+                         # COMPOSIO_API_KEY is set; falls back to a keyless
+                         # docs index otherwise (see agent/composio_check.py)
+
 # Optional, NOT installed by `make setup` -- a fresh clone must not pull a
 # ~300 MB browser download just to run the tests:
 #   playwright==1.49.0   # JS-rendered docs fallback (make setup-browser)
-#   composio==0.8.14     # only needed if COMPOSIO_API_KEY is set

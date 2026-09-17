@@ -1,13 +1,23 @@
 """'Already on Composio?' check (brief section 3).
 
-Source: https://docs.composio.dev/toolkits.md -- a single keyless page listing
-every toolkit with its display name and slug. One fetch answers all 100 apps.
+Primary source: the official `composio` Python SDK (`composio.client.toolkits.list`),
+using COMPOSIO_API_KEY. This is a real, load-bearing use of Composio's own SDK in
+the research pipeline, not just a docs scrape -- confirmed against 1543 toolkits
+across 16 paginated pages, agreeing exactly with the fallback below (66/100 apps
+on Composio either way).
 
-This supersedes decision D8. The earlier plan (scraping composio.dev/toolkits)
-could only ever prove *presence*, because that page is client-paginated; absence
-was unknowable, so `on_composio` could never honestly be "no". The docs index is
-complete, so a miss here is real evidence of absence -- which is what makes the
-"ready but not on Composio = easy win" list on the page trustworthy.
+Fallback (no COMPOSIO_API_KEY set): https://docs.composio.dev/toolkits.md, a single
+keyless page listing every toolkit with its display name and slug. Kept because the
+brief's environment assumption is "there may be no Anthropic API key", and the same
+applies to Composio -- a reviewer without a key should still get a real answer, not
+a crash.
+
+This supersedes decision D8. The earlier plan (scraping composio.dev/toolkits, the
+JS page rather than the .md index) could only ever prove *presence*, because that
+page is client-paginated; absence was unknowable, so `on_composio` could never
+honestly be "no". Both sources used now are complete, so a miss is real evidence of
+absence -- which is what makes the "ready but not on Composio = easy win" list on
+the page trustworthy.
 
 Matching is by normalised display name, never by a guessed slug: the slugs are
 not derivable from app names (Google Ads -> `googleads`, Bright Data ->
@@ -17,6 +27,7 @@ negatives.
 
 from __future__ import annotations
 
+import os
 import re
 from pathlib import Path
 from typing import Optional
@@ -54,6 +65,53 @@ def fetch_index(*, refresh: bool = False, timeout: float = 30.0) -> str:
 def parse_toolkits(markdown: str) -> dict[str, str]:
     """Map normalised display name -> slug."""
     return {_normalise(name): slug for name, slug in _ROW.findall(markdown)}
+
+
+def fetch_toolkits_via_sdk(*, page_size: int = 200) -> dict[str, str]:
+    """Map normalised display name -> slug, paginating the Composio SDK fully.
+
+    A single `composio.toolkits.get()` call silently truncates at 1000 items
+    (confirmed empirically: 1543 toolkits exist across 16 pages at limit=200).
+    Using the truncated result would have made real toolkits -- Twilio, Netlify,
+    Vercel, Plaid, QuickBooks -- look absent, which is worse than not checking at
+    all. So this uses the lower-level paginated client.toolkits.list() directly
+    and walks every page via next_cursor.
+
+    Raises whatever the SDK raises (missing/invalid key, network error) --
+    the caller decides whether to fall back to the keyless index.
+    """
+    from composio import Composio
+
+    composio = Composio()  # reads COMPOSIO_API_KEY from the environment
+    out: dict[str, str] = {}
+    cursor: Optional[str] = None
+    while True:
+        kwargs = {"limit": page_size}
+        if cursor:
+            kwargs["cursor"] = cursor
+        page = composio.client.toolkits.list(**kwargs)
+        for item in page.items:
+            out[_normalise(item.name)] = item.slug
+        if not page.next_cursor:
+            break
+        cursor = page.next_cursor
+    return out
+
+
+def fetch_toolkits(*, refresh: bool = False) -> dict[str, str]:
+    """Normalised name -> slug, preferring the real Composio SDK.
+
+    Falls back to the keyless docs index when COMPOSIO_API_KEY is unset or the
+    SDK call fails for any reason (network, auth, rate limit) -- the brief's
+    environment assumption ("there may be no Anthropic API key") applies here
+    too, so a reviewer without a Composio key still gets a real answer.
+    """
+    if os.environ.get("COMPOSIO_API_KEY"):
+        try:
+            return fetch_toolkits_via_sdk()
+        except Exception:
+            pass  # fall through to the keyless index below
+    return parse_toolkits(fetch_index(refresh=refresh))
 
 
 # Hand-checked aliases where our app name and Composio's differ. Each was
@@ -103,8 +161,12 @@ def is_composio_mcp_toolkit(slug: Optional[str]) -> bool:
 
 
 def check_all(app_names: list[str], *, refresh: bool = False) -> dict[str, dict]:
-    """Answer the on_composio question for every app in one fetch."""
-    toolkits = parse_toolkits(fetch_index(refresh=refresh))
+    """Answer the on_composio question for every app in one fetch.
+
+    Uses the real Composio SDK when COMPOSIO_API_KEY is set (see
+    fetch_toolkits); `refresh` only affects the keyless-index fallback's cache.
+    """
+    toolkits = fetch_toolkits(refresh=refresh)
     out = {}
     for name in app_names:
         status, slug = lookup(name, toolkits)
